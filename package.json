@@ -1,7 +1,7 @@
 {
   "name": "esm-and-other-format-libraries-starter",
-  "version": "1.0.0",
-  "description": "This is a start kit for developing ECMAScript standard EM Modules format library with TypeScript.",
+  "version": "1.1.0",
+  "description": "A starter kit for building and publishing multi-format (ESM, CommonJS, UMD) npm packages with TypeScript + Rollup.",
   "main": "dist/mylib.common.js",
   "module": "dist/mylib.esm.js",
   "browser": "dist/mylib.js",
@@ -12,42 +12,39 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://takuya-motoshima@github.com/takuya-motoshima/esm-and-other-format-libraries-starter.git"
+    "url": "git+https://shumatsumonobu@github.com/shumatsumonobu/esm-and-other-format-libraries-starter.git"
   },
   "keywords": [
-    "browser",
-    "javascript",
-    "js",
-    "library",
-    "lib",
-    "module",
     "typescript",
-    "ts",
+    "rollup",
     "esm",
-    "es6",
-    "mjs",
-    "rollup"
+    "commonjs",
+    "umd",
+    "npm-package",
+    "starter",
+    "boilerplate",
+    "library",
+    "module",
+    "bundler",
+    "multi-format"
   ],
-  "author": "Takuya Motoshima <developer.takuyamotoshima@gmail.com> (https://twitter.com/taaaaaaakuya)",
+  "author": "shumatsumonobu <shumatsumonobu@gmail.com> (https://x.com/shumatsumonobu)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/takuya-motoshima/esm-and-other-format-libraries-starter/issues",
-    "email": "developer.takuyamotoshima@gmail.com"
+    "url": "https://github.com/shumatsumonobu/esm-and-other-format-libraries-starter/issues",
+    "email": "shumatsumonobu@gmail.com"
   },
-  "homepage": "https://github.com/takuya-motoshima/esm-and-other-format-libraries-starter#readme",
+  "homepage": "https://github.com/shumatsumonobu/esm-and-other-format-libraries-starter#readme",
   "devDependencies": {
-    "@types/jest": "^24.0.23",
-    "jest": "^24.9.0",
-    "rollup": "^1.26.4",
-    "rollup-plugin-terser": "^5.1.2",
-    "rollup-plugin-typescript2": "^0.25.2",
-    "ts-jest": "^24.1.0",
-    "ts-loader": "^6.2.1",
-    "ts-node": "^8.5.0",
-    "tsconfig-paths": "^3.9.0",
-    "typescript": "^3.7.2",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/jest": "^29.5.14",
+    "jest": "^29.7.0",
+    "rollup": "^4.28.1",
+    "rollup-plugin-typescript2": "^0.36.0",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.2"
   },
   "dependencies": {}
 }

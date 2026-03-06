@@ -1,1 +1,1 @@
-function n(n,r){return n+r}function r(n,r){return n-r}export{n as add,r as sub};
+function e(e){return 0===e.length?e:e.charAt(0).toUpperCase()+e.slice(1)}function r(e){return e.trim().toLowerCase().replace(/[^a-z0-9\s-]/g,"").replace(/[\s-]+/g,"-").replace(/^-+|-+$/g,"")}function t(e,r,t="..."){return e.length<=r?e:e.slice(0,r)+t}function n(e){return e.replace(/(?:^\w|[A-Z]|\b\w)/g,(e,r)=>0===r?e.toLowerCase():e.toUpperCase()).replace(/[\s\-_]+/g,"")}export{n as camelCase,e as capitalize,r as slugify,t as truncate};

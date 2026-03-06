@@ -1,3 +1,5 @@
-import add from '~/add';
-import sub from '~/sub';
-export { add, sub };
+import capitalize from '~/capitalize';
+import slugify from '~/slugify';
+import truncate from '~/truncate';
+import camelCase from '~/camelCase';
+export { capitalize, slugify, truncate, camelCase };

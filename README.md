@@ -1,708 +1,609 @@
 # esm-and-other-format-libraries-starter
 
-This is a start kit for developing ECMAScript standard EM Modules format library with TypeScript.
+[![npm version](https://img.shields.io/npm/v/esm-and-other-format-libraries-starter.svg)](https://www.npmjs.com/package/esm-and-other-format-libraries-starter)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7+-3178C6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Rollup](https://img.shields.io/badge/Rollup-4.x-EC4A3F.svg?logo=rollup.js&logoColor=white)](https://rollupjs.org/)
 
-## Explanation of Build Files.
+**Write once in TypeScript, ship everywhere** — ESM, CommonJS, and UMD from a single source.
 
-|ES Module|UMD|CommonJS|
-|--|--|--|
-|your-library.esm.js|your-library.js|your-library.common.js|
+A batteries-included starter for building and publishing multi-format npm packages with TypeScript + Rollup.
+Clone it, swap in your code, and publish.
 
-## Create your library.
+This repository includes a **string utility library** (`capitalize`, `slugify`, `truncate`, `camelCase`) as a working sample.
+It demonstrates the full workflow — writing modules, testing, building, and publishing — so you can see how everything fits together before replacing it with your own code.
 
-In this chapter, we will explain how to implement libraries in three formats: ECMAScript standard, CommonJS, and UMD.  
+## Table of Contents
 
-1. Create project.
+- [Build Outputs](#build-outputs)
+- [Getting Started](#getting-started)
+- [Publishing to npm](#publishing-to-npm)
+- [Usage](#usage)
+- [Appendix: tsconfig `module` Output Comparison](#appendix-tsconfig-module-output-comparison)
+- [References](#references)
+- [License](#license)
+- [Author](#author)
 
-    ```sh
-    mkdir your-library && cd $_;
-    ```
+## Build Outputs
 
-1. Create project configuration file.
+The included sample library (`mylib`) produces the following files:
 
-    Execute the following command.  
-    This will create package.json at the root of the project.  
+| Format | File | Use Case |
+|--------|------|----------|
+| ES Modules | `dist/mylib.esm.js` | Bundlers (Vite, webpack, Rollup, etc.) |
+| CommonJS | `dist/mylib.common.js` | Node.js `require()` |
+| UMD | `dist/mylib.js` | `<script>` tag / global `window.mylib` |
 
-    ```sh
-    npm init -y;
-    ```
+> The Getting Started guide below uses `your-library` as a placeholder name. Replace it with your own library name when creating a new project.
 
-    Open package.json and edit as follows.  
+## Getting Started
 
-    ```js
-    ...
-    "main": "dist/your-library.common.js",
-    "module": "dist/your-library.esm.js",
-    "browser": "dist/your-library.js",
-    "types": "types/your-library.d.ts",
-    ...
-    ```
+### 1. Create a Project
 
-    |Name|Value|Description|
-    |--|--|--|
-    |main|dist/your-library.common.js|Library name to output in CommonJS format.|
-    |module|dist/your-library.esm.js|Library name to output in ES Modules format.|
-    |browser|dist/your-library.js|Library name output in UMD format.|
-    |types|types/your-library.d.ts|Set the typescript declaration file.|
+```sh
+mkdir your-library && cd $_
+npm init -y
+```
 
-1. Install required packages.
- 
-    ```sh
-    npm i -D \
-        typescript \
-        ts-node \
-        tsconfig-paths \
-        rollup \
-        rollup-plugin-typescript2 \
-        rollup-plugin-terser \
-        jest \
-        @types/jest \
-        ts-jest;
-    ```
+### 2. Configure package.json
 
-    |Name|Description|
-    |--|--|
-    |typescript|Used to compile TypeScript source code into JavaScript.|
-    |ts-node|Used to execute TypeScript code on a node and immediately check the result.|
-    |tsconfig-paths|Used to resolve paths (alias) in tsconfig.json at runtime with ts-node.|
-    |rollup|Rollup is a module bundler.<br>Used to bundle ES Modules, CommonJS, and UMD libraries for distribution to clients.|
-    |rollup-plugin-typescript2|Plug-in for processing typescript with rollup.|
-    |rollup-plugin-terser|Used to compress bundle files.|
-    |jest|Jest is a library for testing JavaScript code.|
-    |@types/jest|Jest's type declaration.|
-    |ts-jest|A TypeScript preprocessor required to test projects written in TypeScript using Jest.|
+Add the following entry points:
 
-1. Create a TypeScript compilation configuration.
+```jsonc
+{
+  "main": "dist/your-library.common.js",   // CommonJS
+  "module": "dist/your-library.esm.js",     // ES Modules
+  "browser": "dist/your-library.js",        // UMD
+  "types": "types/your-library.d.ts"        // TypeScript declarations
+}
+```
 
-    Create TypeScript compilation configuration file.  
+### 3. Install Dependencies
 
-    ```sh
-    touch tsconfig.json;
-    ```
+```sh
+npm i -D typescript ts-node tsconfig-paths \
+  rollup rollup-plugin-typescript2 @rollup/plugin-terser \
+  jest @types/jest ts-jest
+```
 
-    Add content:
+<details>
+<summary>What each package does</summary>
 
-    ```js
+| Package | Role |
+|---------|------|
+| `typescript` | TypeScript compiler |
+| `ts-node` | Run TypeScript directly on Node.js |
+| `tsconfig-paths` | Resolve tsconfig `paths` aliases at runtime |
+| `rollup` | Module bundler |
+| `rollup-plugin-typescript2` | TypeScript plugin for Rollup |
+| `@rollup/plugin-terser` | Minify bundles |
+| `jest` | Testing framework |
+| `@types/jest` | Type definitions for Jest |
+| `ts-jest` | TypeScript preprocessor for Jest |
+
+</details>
+
+### 4. Configure TypeScript
+
+Create `tsconfig.json`:
+
+```jsonc
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "declaration": true,
+    "declarationDir": "./types",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "noImplicitAny": true,
+    "baseUrl": "./",
+    "paths": { "~/*": ["src/*"] },
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.test.ts"]
+}
+```
+
+<details>
+<summary>Key options explained</summary>
+
+| Option | Value | Description |
+|--------|-------|-------------|
+| `target` | `ESNext` | Emit latest ECMAScript features |
+| `module` | `ESNext` | Preserve `import` / `export` as-is |
+| `declaration` | `true` | Generate `.d.ts` type definition files |
+| `declarationDir` | `./types` | Output directory for type definitions |
+| `paths` | `{"~/*": ["src/*"]}` | Use `~/` as an alias for `src/` |
+
+</details>
+
+### 5. Write Your Library
+
+```sh
+mkdir src
+```
+
+```ts
+// src/capitalize.ts
+/** Capitalize the first letter of a string. */
+export default function capitalize(str: string): string {
+  if (str.length === 0) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+```
+
+```ts
+// src/slugify.ts
+/** Convert a string into a URL-friendly slug. */
+export default function slugify(str: string): string {
+  return str
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/[\s-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+```
+
+```ts
+// src/truncate.ts
+/** Truncate a string to the given length and append a suffix. */
+export default function truncate(str: string, length: number, suffix: string = '...'): string {
+  if (str.length <= length) return str;
+  return str.slice(0, length) + suffix;
+}
+```
+
+```ts
+// src/camelCase.ts
+/** Convert a string to camelCase. */
+export default function camelCase(str: string): string {
+  return str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, (ch, index) =>
+      index === 0 ? ch.toLowerCase() : ch.toUpperCase()
+    )
+    .replace(/[\s\-_]+/g, '');
+}
+```
+
+```ts
+// src/your-library.ts — Entry point that re-exports all modules
+import capitalize from '~/capitalize';
+import slugify from '~/slugify';
+import truncate from '~/truncate';
+import camelCase from '~/camelCase';
+export { capitalize, slugify, truncate, camelCase };
+```
+
+### 6. Run on Node.js
+
+Replace `your-library` with the actual entry point file name (e.g. `mylib` in this starter).
+
+```sh
+npx ts-node -r tsconfig-paths/register -P tsconfig.json \
+  -O '{"module":"commonjs"}' \
+  -e "import { capitalize, slugify } from '~/your-library'; \
+      console.log(capitalize('hello'));  \
+      console.log(slugify('Hello World'));"
+# => Hello
+# => hello-world
+```
+
+### 7. Set Up & Run Tests
+
+Create `jest.config.js`:
+
+```js
+const { pathsToModuleNameMapper } = require('ts-jest');
+const { compilerOptions } = require('./tsconfig.json');
+
+module.exports = {
+  roots: ['<rootDir>/src', '<rootDir>/tests/'],
+  transform: { '^.+\\.tsx?$': 'ts-jest' },
+  testRegex: '(/tests/.*|(\\.|/)(test|spec))\\.tsx?$',
+  moduleFileExtensions: ['ts', 'js'],
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: '<rootDir>/',
+  }),
+};
+```
+
+Write test files (showing two examples below — the sample library includes tests for all four functions):
+
+```sh
+mkdir tests
+```
+
+```ts
+// tests/capitalize.test.ts
+import { capitalize } from '~/your-library';
+
+test('capitalizes the first letter', () => {
+  expect(capitalize('hello')).toBe('Hello');
+});
+
+test('handles empty string', () => {
+  expect(capitalize('')).toBe('');
+});
+```
+
+```ts
+// tests/slugify.test.ts
+import { slugify } from '~/your-library';
+
+test('converts spaces to hyphens', () => {
+  expect(slugify('Hello World')).toBe('hello-world');
+});
+
+test('removes special characters', () => {
+  expect(slugify('Hello, World!')).toBe('hello-world');
+});
+```
+
+```sh
+npm test
+```
+
+```
+PASS  tests/capitalize.test.ts
+PASS  tests/slugify.test.ts
+PASS  tests/truncate.test.ts
+PASS  tests/camelCase.test.ts
+
+Test Suites: 4 passed, 4 total
+Tests:       16 passed, 16 total
+```
+
+### 8. Build
+
+Create `rollup.config.mjs`:
+
+> **Note:** The UMD global name is derived from the `browser` field in `package.json` (e.g. `dist/mylib.js` → `window.mylib`).
+> If the name contains hyphens or underscores, it will be automatically converted to camelCase (e.g. `your-library` → `window.yourLibrary`).
+
+```js
+import { createRequire } from 'node:module';
+import typescript from 'rollup-plugin-typescript2';
+import terser from '@rollup/plugin-terser';
+
+// Load package.json (Rollup v4 no longer supports direct JSON imports)
+const require = createRequire(import.meta.url);
+const pkg = require('./package.json');
+
+export default {
+  external: Object.keys(pkg.dependencies || {}),
+  input: './src/your-library.ts',
+  plugins: [
+    typescript({
+      tsconfigDefaults: { compilerOptions: {} },
+      tsconfig: 'tsconfig.json',
+      tsconfigOverride: { compilerOptions: {} },
+      useTsconfigDeclarationDir: true,
+    }),
+    terser(),
+  ],
+  output: [
+    { format: 'esm', file: pkg.module },
+    { format: 'cjs', file: pkg.main },
     {
-      "compilerOptions": {
-        "target": "ESNext",
-        "module": "ESNext",
-        "declarationDir": "./types",
-        "declaration": true,
-        "outDir": "./dist",
-        "rootDir": "./src",
-        "strict": true,
-        "noImplicitAny": true,
-        "baseUrl": "./",
-        "paths": {"~/*": ["src/*"]},
-        "esModuleInterop": true
-      },
-      "include": [
-        "src/**/*"
-      ],
-      "exclude": [
-        "node_modules",
-        "**/*.test.ts"
-     ]
+      format: 'umd',
+      file: pkg.browser,
+      name: pkg.browser
+        .replace(/^.*\/|\.js$/g, '')
+        .replace(/([-_][a-z])/g, (g) =>
+          g.toUpperCase().replace('-', '').replace('_', '')
+        ),
+    },
+  ],
+};
+```
+
+```sh
+npm run build
+```
+
+Build output:
+
+```
+dist/
+  your-library.esm.js       # ES Modules
+  your-library.common.js     # CommonJS
+  your-library.js            # UMD
+types/
+  your-library.d.ts          # Type definitions
+  capitalize.d.ts
+  slugify.d.ts
+  truncate.d.ts
+  camelCase.d.ts
+```
+
+## Publishing to npm
+
+### Initial Setup
+
+```sh
+# Set local npm user info
+npm set init.author.name 'Your name'
+npm set init.author.email 'your@email.com'
+npm set init.author.url 'https://your-url.com'
+npm set init.license 'MIT'
+npm set init.version '1.0.0'
+
+# Log in to npm (or create a new account)
+npm adduser
+```
+
+### Publish
+
+```sh
+# 1. Create a GitHub repo & clone
+git clone https://github.com/your-user/your-repository.git
+
+# 2. Exclude unnecessary files from the package
+printf 'node_modules/\npackage-lock.json\n' > .npmignore
+
+# 3. Tag and publish
+git tag -a v1.0.0 -m 'My first version v1.0.0'
+git push origin v1.0.0
+npm publish
+```
+
+### Version Upgrade
+
+```sh
+git commit -am 'Update something'
+git push
+npm version patch -m "Update something"
+git push --tags
+npm publish
+```
+
+## Usage
+
+The examples below use the sample library included in this repository.
+
+```sh
+npm i esm-and-other-format-libraries-starter
+```
+
+### ES Modules
+
+Works directly in the browser — no compilation needed.
+
+```html
+<script type="module">
+  import { capitalize, slugify } from './node_modules/esm-and-other-format-libraries-starter/dist/mylib.esm.js';
+  console.log(capitalize('hello'));      // => 'Hello'
+  console.log(slugify('Hello World'));   // => 'hello-world'
+</script>
+```
+
+### CommonJS
+
+Requires a bundler to run in the browser.
+
+```sh
+npm i -D webpack webpack-cli
+```
+
+```js
+// app.js
+import { capitalize, slugify } from 'esm-and-other-format-libraries-starter';
+console.log(capitalize('hello'));      // => 'Hello'
+console.log(slugify('Hello World'));   // => 'hello-world'
+```
+
+```sh
+npx webpack app.js -o bundle.js
+```
+
+```html
+<script src="bundle.js"></script>
+```
+
+### UMD
+
+Available as a global variable — just drop in a `<script>` tag.
+
+```html
+<script src="node_modules/esm-and-other-format-libraries-starter/dist/mylib.js"></script>
+<script>
+  console.log(mylib.capitalize('hello'));      // => 'Hello'
+  console.log(mylib.slugify('Hello World'));   // => 'hello-world'
+</script>
+```
+
+## Appendix: tsconfig `module` Output Comparison
+
+<details>
+<summary>Click to expand</summary>
+
+This appendix uses a minimal example to illustrate how the `module` setting in tsconfig affects compiled output.
+
+```ts
+// src/app.ts
+import capitalize from './capitalize';
+const result = capitalize('hello');
+```
+
+```ts
+// src/capitalize.ts
+export default function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+```
+
+### `module: "es2015"` / `"ESNext"`
+
+`import` / `export` statements are preserved as-is.
+
+```js
+// dist/app.js
+import capitalize from './capitalize';
+const result = capitalize('hello');
+```
+
+```js
+// dist/capitalize.js
+export default function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+```
+
+### `module: "commonjs"`
+
+Converted to `require()` / `exports`.
+
+```js
+// dist/app.js
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const capitalize_1 = __importDefault(require("./capitalize"));
+const result = capitalize_1.default('hello');
+```
+
+```js
+// dist/capitalize.js
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+function default_1(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+exports.default = default_1;
+```
+
+### `module: "amd"`
+
+Wrapped in AMD `define()`.
+
+```js
+// dist/app.js
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+define(["require", "exports", "./capitalize"], function (require, exports, capitalize_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    capitalize_1 = __importDefault(capitalize_1);
+    const result = capitalize_1.default('hello');
+});
+```
+
+```js
+// dist/capitalize.js
+define(["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function default_1(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
-    ```
+    exports.default = default_1;
+});
+```
 
-    |Option||Value|Description|
-    |--|--|--|--|
-    |compilerOptions|||
-    ||target|ESNext|Specify ECMAScript target version.<br>"ESNext" targets latest supported ES proposed features.|
-    ||module|ESNext|Specify module code generation.<br>"ESNext" is an ECMAScript standard, and import/export in typescript is output as import/export.|
-    ||declarationDir|./types|Output directory for generated declaration files.|
-    ||declaration|true|Generates corresponding .d.ts file.|
-    ||outDir|./dist|Output directory for compiled files.|
-    ||rootDir|./src|Specifies the root directory of input files.|
-    ||baseUrl|./|Base directory to resolve non-relative module names.|
-    ||paths|{<br>&nbsp;&nbsp;"~/\*": ["src/\*"]<br>}|List of path mapping entries for module names to locations relative to the baseUrl.<br><br>Set the alias of "/ src" directly under the root with "~ /".<br>e.g. import Awesome from '~/components/Awesome';|
-    |include||[<br>&nbsp;&nbsp;"src/\*\*/\*"<br>]|A list of glob patterns that match the files to be included in the compilation.<br>Set the source directory.|
-    |exclude||[<br>&nbsp;&nbsp;"node_modules",<br>&nbsp;&nbsp;"\*\*/\*.test.ts"<br>]|A list of files to exclude from compilation.<br>Set node_modules and unit test code.|
+### `module: "system"`
 
-1. Create a library module with a type script.  
+Wrapped in SystemJS `System.register()`.
 
-    Create a directory to store source files.  
-
-    ```sh
-    mkdir src;
-    ```
-
-    Submodule that calculates the subtraction.  
-
-    ```js
-    // src/add.ts
-    /**
-     * Sum two values
-     */
-    export default function(a:number, b:number):number {
-      return a + b;
-    }
-    ```
-
-    Submodule that calculates the addition.  
-
-    ```js
-    // src/sub.ts
-    /**
-     * Diff two values
-     */
-    export default function(a:number, b:number):number {
-      return a - b;
-    }
-    ```
-
-    Main module that imports multiple modules and exports a single library.  
-
-    ```js
-    // src/your-library.ts
-    import add from '~/add';
-    import sub from '~/sub';
-    export {add, sub};
-    ```
-
-1. Let's run the library on node.
-
-    Run the following command.  
-    To run on node, it is important to set the module option to CommonJS.  
-
-    ```sh
-    npx ts-node -r tsconfig-paths/register -P tsconfig.json -O '{"module":"commonjs"}' -e "\
-        import {add} from '~/your-library';
-        console.log('1+2=' + add(1,2));";# 1+2=3
-    ```
-1. Setting up and running unit tests.  
-
-    Create unit test configuration file.
-
-    ```sh
-    touch jest.config.js;
-    ```
-
-    Add content:
-
-    ```js
-    const { pathsToModuleNameMapper } = require('ts-jest/utils');
-    const { compilerOptions } = require('./tsconfig.json');
-    module.exports = {
-      roots: [
-        '<rootDir>/src',
-        '<rootDir>/tests/'
-      ],
-      transform: {
-        '^.+\\.tsx?$': 'ts-jest'
-      },
-      testRegex: '(/tests/.*|(\\.|/)(test|spec))\\.tsx?$',
-      moduleFileExtensions: [
-        'ts',
-        'js'
-      ],
-      moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths , { prefix: '<rootDir>/' })
-      // moduleNameMapper: {
-      //   '^~/(.+)': '<rootDir>/src/$1'
-      // }
-    }
-    ```
-
-    |Name|Description|
-    |--|--|
-    |roots|A list of paths to directories that Jest should use to search for files in.<br>Specify the directory path where the source code (./src) and test code (./tests) files are located.|
-    |transform|Instruct Jest to transpile TypeScript code with ts-jest.|
-    |testRegex|Specify the file and directory to be teste.|
-    |moduleFileExtensions|Specifies the extension of the file to be tested.|
-    |moduleNameMapper|Apply alias setting of actual path set in "baseUrl" and "paths" of tsconfig.json.|
-
-    Create a tests directory to store test code at the root of the project.  
-
-    ```sh
-    mkdir tests;
-    ```
-
-    Then, Create add.test.ts and sub.test.ts files in the tests directory.  
-    This will contain our actual test.  
-
-    ```js
-    // tests/add.test.ts
-    import {add} from '~/your-library';
-    test('Add 1 + 2 to equal 3', () => {
-      expect(add(1, 2)).toBe(3);
-    });    
-    ```
-
-    ```js
-    // tests/sub.test.ts
-    import {sub} from '~/your-library';
-    test('Subtract 1 - 2 to equal -1', () => {
-      expect(sub(1, 2)).toBe(-1);
-    });
-    ```
-
-    Open your package.json and add the following script.  
-
-    ```js
-    ...
-    "scripts": {
-      "test": "jest"
-    ...
-    ```
-
-    Run the test.  
-
-    ```sh
-    npm run test;
-    ```
-
-    Jest will print this message.  
-    You just successfully wrote your first test.  
-
-    ```sh
-    PASS  tests/add.test.ts
-    PASS  tests/sub.test.ts
-
-    Test Suites: 2 passed, 2 total
-    Tests:       2 passed, 2 total
-    Snapshots:   0 total
-    Time:        1.332s, estimated 3s
-    Ran all test suites.
-    ```
-
-1. Run the build.  
-There is one caveat.  
-Convert UMD library names in global namespace from snake case to camel case.
-In the case of e.g.your-library, it will be window.yourLibrary.  
-
-    Create a build configuration file.
-
-    ```sh
-    touch rollup.config.js;
-    ```
-
-    Add content:  
-
-    ```js
-    import typescript from 'rollup-plugin-typescript2';
-    import { terser } from "rollup-plugin-terser";
-    import pkg from './package.json';
-    export default {
-      external: Object.keys(pkg['dependencies'] || []),
-      input: './src/your-library.ts',
-      plugins: [
-        typescript({
-          tsconfigDefaults: { compilerOptions: {} },
-          tsconfig: "tsconfig.json",
-          tsconfigOverride: { compilerOptions: {} },
-          useTsconfigDeclarationDir: true
-        }),
-        terser()
-      ],
-      output: [
-        // ES module (for bundlers) build.
-        {
-          format: 'esm',
-          file: pkg.module
-        },
-        // CommonJS (for Node) build.
-        {
-          format: 'cjs',
-          file: pkg.main
-        },
-        // browser-friendly UMD build
-        {
-          format: 'umd',
-          file: pkg.browser,
-          name: pkg.browser
-            .replace(/^.*\/|\.js$/g, '')
-            .replace(/([-_][a-z])/g, (group) => group.toUpperCase().replace('-', '').replace('_', ''))
+```js
+// dist/app.js
+System.register(["./capitalize"], function (exports_1, context_1) {
+    "use strict";
+    var capitalize_1, result;
+    var __moduleName = context_1 && context_1.id;
+    return {
+        setters: [
+            function (capitalize_1_1) {
+                capitalize_1 = capitalize_1_1;
+            }
+        ],
+        execute: function () {
+            result = capitalize_1.default('hello');
         }
-      ]
+    };
+});
+```
+
+```js
+// dist/capitalize.js
+System.register([], function (exports_1, context_1) {
+    "use strict";
+    var __moduleName = context_1 && context_1.id;
+    function default_1(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
-    ```
-
-    |Name|Description|
-    |--|--|
-    |external|Comma-separate list of module IDs to exclude.|
-    |input|The bundle's entry point(s) (e.g. your main.js or app.js or index.js).|
-    |plugins|Plugins allow you to customise Rollup's behaviour by, for example,<br>transpiling code before bundling, or finding third-party modules in your node_modules folder.<br>Use rollup-plugin-typescript2 and rollup-plugin-terser.<br>rollup-plugin-typescript2 is a TypeScript loader, and this plugin reads "tsconfig.json" by default.<br>rollup-plugin-terser compresses source code.|
-    |output|The output destination of the bundle.<br>Three types of libraries, ES Modules, CommonJS, and UMD, are output.|
-
-    Open your package.json and add the following script.  
-
-    ```js
-    ...
-    "scripts": {
-      "build": "rollup -c"
-    }
-    ...
-    ```
-
-    Run the build.
-
-    ```sh
-    npm run build;
-    ```
-
-    The library compilation result and declaration file are output to the project root.  
-    You just built successfully.  
-
-    ```
-    .
-        -- dist/
-            -- your-library.esm.js
-            -- your-library.common.js
-            -- your-library.js
-        -- types/
-            -- your-library.d.ts
-            -- add.d.ts
-            -- sub.d.ts
-    ```
-
-## How to publish a npm package
-
-1. Create an NPM user locally.  
-When the command is executed, a '~/.npmrc' file is created and the entered information is stored.
-
-    ```sh
-    npm set init.author.name 'Your name';
-    npm set init.author.email 'your@email.com';
-    npm set init.author.url 'https://your-url.com';
-    npm set init.license 'MIT';
-    npm set init.version '1.0.0';
-    ```
-
-1. Create a user on [npm](https://www.npmjs.com/).  
-If the user is not registered yet, enter the new user information to be registered in npm.  
-If an npm user has already been created, enter the user information and log in.
-
-    ```sh
-    npm adduser;
-    ```
-
-1. Create a repository on GitHub and clone.
-
-    ```sh
-    git clone https://github.com/your-user/your-repository.git;
-    ```
-
-1. Setting files to be excluded from publishing
-
-    Create an .npmignore file at the root of the project.  
-
-    ```
-    .npmignore
-    ```
-
-    Add node_modules and package-lock.json to .npmignore not to publish.
-
-    ```
-    node_modules/
-    package-lock.json
-    ```
-
-1. Create v1.0.0 tag on GitHub.
-
-    ```sh
-    git tag -a v1.0.0 -m 'My first version v1.0.0';
-    git push origin v1.0.0;
-    ```
-
-1. Publish to npm
-
-    ```sh
-    npm publish;
-    ```
-
-## How to upgrade NPM packages
-
-1. Push program changes to github
-
-    ```sh
-    git commit -am 'Update something';
-    git push;
-    ```
-
-1. Increase version
-
-    ```sh
-    npm version patch -m "Update something";
-    ```
-
-1. Create a new version tag on Github
-
-    ```sh
-    git push --tags;
-    ```
-
-1. Publish to npm
-
-    ```sh
-    npm publish;
-    ```
-
-## Try this library
-
-1. Create project.
-
-    ```sh
-    mkdir myapp && cd $_;
-    ```
-
-1. Create project configuration file.
-
-    ```sh
-    npm init -y;
-    ```
-
-1. Install this library.
-
-    ```sh
-    npm i -S esm-and-other-format-libraries-starter;
-    ```
-
-1. Create HTML.
-
-    ```sh
-    touch index.html;
-    ```
-
-1. Try the library.
-
-    - For ES Modules:
-
-        > The ES Modules library can be run in the browser immediately without compiling.
-
-        Add the following code to myapp/index.html and check with your browser.  
-
-        ```js
-        <script type="module">
-        import { add } from './node_modules/esm-and-other-format-libraries-starter/dist/mylib.esm.js';
-        console.log(`1+2=${add(1,2)}`);// 1+2=3
-        </script>
-        ```
-
-    - For CommonJS:
-
-        >The CommonJS library cannot be executed in the browser as it is, so it must be compiled into a format that can be executed in the browser.
-
-        Install webpack for build.  
-
-        ```sh
-        npm i -D webpack webpack-cli;
-        ```
-
-        Create a module that runs the library.  
-        Prepare myapp/app.js and add the following code.  
-
-        ```js
-        import {add} from 'esm-and-other-format-libraries-starter';
-        console.log(`1+2=${add(1,2)}`);// 1+2=3
-        ```
-
-        Compile "myapp/app.js" into a format that can be executed by a browser.  
-        The compilation result is output to "myapp/app.budle.js".  
-
-        ```sh
-        npx webpack app.js -o bundle.js;
-        ```
-
-        Add the following code to myapp/index.html and check with your browser.  
-
-        ```html
-        <script src="bundle.js"></script>
-        ```
-
-    - For UMD:
-
-        > The UMD library can be executed globally.
-        > It's very easy, but I don't like it because it makes module dependencies unclear.
-
-        Add the following code to myapp/index.html and check with your browser.  
-
-        ```html
-        <script src="node_modules/esm-and-other-format-libraries-starter/dist/mylib.js"></script>
-        <script>
-        console.log(`1+2=${mylib.add(1,2)}`);// 1+2=3
-        </script>
-        ```
-
-## Difference in tscofig module output results.
-
-> Check what JavaScript code is generated according to the setting value of module of tsconfig.
-
-1. The following is a module written in TypeScript used in the experiment.
-
-    Main module.  
-
-    ```js
-    // ./src/app.ts
-    import add from './add';
-    const result = add(1, 2);
-    ```
-
-    Sub module.  
- 
-    ```js
-    // ./src/add.ts
-    export default function (a:number, b:number):number {
-      return a + b;
-    }
-    ```
-
-1. Experimental results
-
-    - 'target' is 'ESNext' and 'module' is 'es2015' or 'ESNext':  
-
-        ```js
-        // ./dist/app.js
-        import add from './add';
-        const result = add(1, 2);
-        ```
-
-        ```js
-        // ./dist/add.js
-        export default function (a, b) {
-            return a + b;
+    exports_1("default", default_1);
+    return {
+        setters: [],
+        execute: function () {
         }
-        ```
+    };
+});
+```
 
-    - 'target' is 'ESNext' and 'module' is 'none' or 'commonjs':  
+### `module: "umd"`
 
-        ```js
-        // ./dist/app.js
-        "use strict";
-        var __importDefault = (this && this.__importDefault) || function (mod) {
-            return (mod && mod.__esModule) ? mod : { "default": mod };
-        };
-        Object.defineProperty(exports, "__esModule", { value: true });
-        const add_1 = __importDefault(require("./add"));
-        const result = add_1.default(1, 2);
-        ```
+Wrapped in a universal loader that supports both CommonJS and AMD.
 
-        ```js
-        // ./dist/add.js
-        "use strict";
-        Object.defineProperty(exports, "__esModule", { value: true });
-        function default_1(a, b) {
-            return a + b;
-        }
-        exports.default = default_1;
-        ```
+```js
+// dist/app.js
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+(function (factory) {
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === "function" && define.amd) {
+        define(["require", "exports", "./capitalize"], factory);
+    }
+})(function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const capitalize_1 = __importDefault(require("./capitalize"));
+    const result = capitalize_1.default('hello');
+});
+```
 
-    - 'target' is 'ESNext' and 'module' is 'amd':  
+```js
+// dist/capitalize.js
+(function (factory) {
+    if (typeof module === "object" && typeof module.exports === "object") {
+        var v = factory(require, exports);
+        if (v !== undefined) module.exports = v;
+    }
+    else if (typeof define === "function" && define.amd) {
+        define(["require", "exports"], factory);
+    }
+})(function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    function default_1(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    exports.default = default_1;
+});
+```
 
-        ```js
-        ./dist/app.js
-        var __importDefault = (this && this.__importDefault) || function (mod) {
-            return (mod && mod.__esModule) ? mod : { "default": mod };
-        };
-        define(["require", "exports", "./add"], function (require, exports, add_1) {
-            "use strict";
-            Object.defineProperty(exports, "__esModule", { value: true });
-            add_1 = __importDefault(add_1);
-            const result = add_1.default(1, 2);
-        });
-        ```
+</details>
 
-        ```js
-        // ./dist/add.js
-        define(["require", "exports"], function (require, exports) {
-            "use strict";
-            Object.defineProperty(exports, "__esModule", { value: true });
-            function default_1(a, b) {
-                return a + b;
-            }
-            exports.default = default_1;
-        });
-        ```
+## References
 
-    - 'target' is 'ESNext' and 'module' is 'system':  
-
-        ```js
-        // ./dist/app.js
-        System.register(["./add"], function (exports_1, context_1) {
-            "use strict";
-            var add_1, result;
-            var __moduleName = context_1 && context_1.id;
-            return {
-                setters: [
-                    function (add_1_1) {
-                        add_1 = add_1_1;
-                    }
-                ],
-                execute: function () {
-                    result = add_1.default(1, 2);
-                }
-            };
-        });
-        ```
-
-        ```js
-        // ./dist/add.js
-        System.register([], function (exports_1, context_1) {
-            "use strict";
-            var __moduleName = context_1 && context_1.id;
-            function default_1(a, b) {
-                return a + b;
-            }
-            exports_1("default", default_1);
-            return {
-                setters: [],
-                execute: function () {
-                }
-            };
-        });
-        ```
-
-    - 'target' is 'ESNext' and 'module' is 'umd':  
-
-        ```js
-        // ./dist/app.js
-        var __importDefault = (this && this.__importDefault) || function (mod) {
-            return (mod && mod.__esModule) ? mod : { "default": mod };
-        };
-        (function (factory) {
-            if (typeof module === "object" && typeof module.exports === "object") {
-                var v = factory(require, exports);
-                if (v !== undefined) module.exports = v;
-            }
-            else if (typeof define === "function" && define.amd) {
-                define(["require", "exports", "./add"], factory);
-            }
-        })(function (require, exports) {
-            "use strict";
-            Object.defineProperty(exports, "__esModule", { value: true });
-            const add_1 = __importDefault(require("./add"));
-            const result = add_1.default(1, 2);
-        });
-        ```
-
-        ```js
-        // ./dist/add.js
-        (function (factory) {
-            if (typeof module === "object" && typeof module.exports === "object") {
-                var v = factory(require, exports);
-                if (v !== undefined) module.exports = v;
-            }
-            else if (typeof define === "function" && define.amd) {
-                define(["require", "exports"], factory);
-            }
-        })(function (require, exports) {
-            "use strict";
-            Object.defineProperty(exports, "__esModule", { value: true });
-            function default_1(a, b) {
-                return a + b;
-            }
-            exports.default = default_1;
-        });
-        ```
-
-## Reference
-- [Compiler Options · TypeScript](https://www.typescriptlang.org/docs/handbook/compiler-options.html)
+- [TypeScript Compiler Options](https://www.typescriptlang.org/docs/handbook/compiler-options.html)
 
 ## License
-[MIT](LICENSE.txt)
+
+[MIT](LICENSE)
 
 ## Author
-- Twitter: [@TakuyaMotoshima](https://twitter.com/taaaaaaakuya)
-- Github: [TakuyaMotoshima](https://github.com/takuya-motoshima)
-mail to: development.takuyamotoshima@gmail.com
+
+- Twitter: [@shumatsumonobu](https://x.com/shumatsumonobu)
+- GitHub: [shumatsumonobu](https://github.com/shumatsumonobu)
+- Mail: shumatsumonobu@gmail.com

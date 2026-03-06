@@ -1,2 +1,8 @@
+# Dependencies
 node_modules/
+
+# Package manager lock file
 package-lock.json
+
+# Claude Code
+.claude/
